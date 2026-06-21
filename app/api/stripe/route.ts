@@ -1,6 +1,6 @@
 import Stripe from "stripe";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", { apiVersion: "2027-05-27" });
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", { apiVersion: "2026-05-27.dahlia" });
 
 export async function POST(request: Request) {
   const { amount, currency = "mad", metadata } = await request.json();
