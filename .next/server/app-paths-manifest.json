@@ -1,11 +1,10 @@
 {
-  "/api/stripe/route": "app/api/stripe/route.js",
-  "/sitemap.xml/route": "app/sitemap.xml/route.js",
   "/_not-found/page": "app/_not-found/page.js",
-  "/dashboard/page": "app/dashboard/page.js",
-  "/garage/page": "app/garage/page.js",
+  "/sitemap.xml/route": "app/sitemap.xml/route.js",
+  "/admin/page": "app/admin/page.js",
   "/garage/register/page": "app/garage/register/page.js",
   "/page": "app/page.js",
   "/roadside/page": "app/roadside/page.js",
-  "/admin/page": "app/admin/page.js"
+  "/garage/page": "app/garage/page.js",
+  "/dashboard/page": "app/dashboard/page.js"
 }
