@@ -1,179 +1,384 @@
+"use client";
+
+import { ChangeEvent, FormEvent, useState } from "react";
+import { motion } from "framer-motion";
+import { Sparkles, Truck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { MapPin, ShieldCheck, Sparkles, Truck, Users } from "lucide-react";
 
-const statistics = [
-  { label: "Registered Garages", value: "1,248+" },
-  { label: "Available Mechanics", value: "892" },
-  { label: "Completed Repairs", value: "23,540" },
-  { label: "Customer Satisfaction", value: "98%" }
+const heroHighlights = [
+  "Personal concierge booking",
+  "Certified premium garages",
+  "Real-time appointment slots",
+  "Door-to-door delivery options"
 ];
 
-const services = [
-  { icon: "🔧", title: "Repair & Maintenance", description: "Oil changes, engine checks, brake repair, and scheduled service." },
-  { icon: "🚗", title: "Roadside Assistance", description: "Fast towing, battery jumpstarts, and emergency support across Morocco." },
-  { icon: "🧽", title: "Car Wash & Detailing", description: "Premium finishes, interior cleaning, and ceramic coating options." },
-  { icon: "🛞", title: "Tire & Alignment", description: "Tire fitting, balancing, and advanced wheel alignment." }
+const premiumServices = [
+  {
+    title: "Precision service booking",
+    description: "Book appointments with elite service centers and enjoy transparent pricing, detailed inspection, and trusted workmanship."
+  },
+  {
+    title: "Electric & hybrid expertise",
+    description: "Specialized care for modern EV and hybrid vehicles with genuine parts and calibrated diagnostics."
+  },
+  {
+    title: "White-glove pickup",
+    description: "Schedule a luxury pickup and delivery experience so your car is serviced without interrupting your day."
+  }
 ];
 
-function GarageCard() {
+const processSteps = [
+  {
+    label: "Select service",
+    detail: "Choose the exact maintenance or repair package your vehicle requires."
+  },
+  {
+    label: "Pick date & time",
+    detail: "Reserve a slot instantly and confirm with premium partners near you."
+  },
+  {
+    label: "Enjoy vehicle care",
+    detail: "Receive updates, inspection reports, and a flawless completion experience."
+  }
+];
+
+function PremiumCard({ title, description }: { title: string; description: string }) {
   return (
-    <article className="glass-card rounded-[32px] p-6 shadow-glow transition duration-300 hover:-translate-y-1 hover:border-sky-400/30">
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <p className="text-sm text-slate-300">Garage</p>
-          <h3 className="text-xl font-semibold">Garage Elite Tanger</h3>
-          <p className="mt-2 text-sm text-slate-400">Bd. Mohamed V, Tanger</p>
-        </div>
-        <span className="rounded-full bg-slate-950/70 px-3 py-1 text-xs uppercase tracking-[0.24em] text-slate-200">Open</span>
+    <div className="group rounded-[32px] border border-white/10 bg-slate-950/80 p-8 transition duration-300 hover:-translate-y-1 hover:border-sky-400/30">
+      <div className="flex h-14 w-14 items-center justify-center rounded-3xl bg-slate-900/70 text-sky-300 transition group-hover:bg-sky-400/10">
+        <Sparkles className="h-6 w-6" />
       </div>
-      <div className="mt-5 grid gap-3 text-sm text-slate-300 sm:grid-cols-2">
-        <p>Rating: ★ 4.9</p>
-        <p>Reviews: 254</p>
-        <p>Mechanics: 12</p>
-        <p>Wait Time: 18 min</p>
-      </div>
-    </article>
+      <h3 className="mt-6 text-xl font-semibold text-white">{title}</h3>
+      <p className="mt-3 text-sm leading-7 text-slate-300">{description}</p>
+    </div>
   );
 }
 
 export default function HomePage() {
+  const currentYear = new Date().getFullYear();
+  const [form, setForm] = useState({
+    name: "",
+    phone: "",
+    brand: "",
+    model: "",
+    year: `${currentYear}`,
+    service: "Periodic check-up",
+    date: "",
+    time: "09:00",
+    description: ""
+  });
+  const [status, setStatus] = useState("idle");
+  const [message, setMessage] = useState("");
+
+  const serviceOptions = [
+    "Periodic check-up",
+    "Brake service",
+    "Battery inspection",
+    "Detailing & protection",
+    "Tire alignment",
+    "Oil change"
+  ];
+
+  const yearOptions = Array.from({ length: 14 }, (_, i) => `${currentYear - i}`);
+
+  const handleChange = (event: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, value } = event.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setStatus("submitting");
+    setMessage("");
+
+    if (
+      !form.name ||
+      !form.phone ||
+      !form.brand ||
+      !form.model ||
+      !form.year ||
+      !form.service ||
+      !form.date ||
+      !form.time ||
+      !form.description
+    ) {
+      setStatus("error");
+      setMessage("Please complete all fields before submitting your appointment.");
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/appointments", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(form)
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error?.error || "Unable to submit your appointment.");
+      }
+
+      setStatus("success");
+      setMessage("Your appointment request has been received. Our team will contact you shortly.");
+      setForm({
+        name: "",
+        phone: "",
+        brand: "",
+        model: "",
+        year: `${currentYear}`,
+        service: "Periodic check-up",
+        date: "",
+        time: "09:00",
+        description: ""
+      });
+    } catch (error) {
+      setStatus("error");
+      setMessage((error as Error).message || "An unexpected error occurred.");
+    }
+  };
+
   return (
-    <main className="min-h-screen bg-hero-gradient px-5 py-10 sm:px-10 lg:px-16">
-      <section className="mx-auto flex max-w-7xl flex-col gap-12">
-        <div className="grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
-          <div className="space-y-8">
-            <div className="inline-flex items-center gap-3 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-200 shadow-glass">
+    <main className="min-h-screen overflow-hidden bg-hero-gradient px-5 py-10 sm:px-10 lg:px-16">
+      <section className="relative overflow-hidden rounded-[40px] border border-white/10 bg-slate-950/70 p-8 shadow-glow">
+        <div className="pointer-events-none absolute right-0 top-1/2 h-80 w-80 -translate-y-1/2 rounded-full bg-sky-400/10 blur-3xl" />
+        <div className="pointer-events-none absolute left-0 top-20 h-72 w-72 -translate-x-1/2 rounded-full bg-fuchsia-500/10 blur-3xl" />
+        <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
+          <motion.div initial={{ opacity: 0, x: -24 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.9 }} className="space-y-8">
+            <div className="inline-flex items-center gap-3 rounded-full border border-slate-500/30 bg-white/5 px-4 py-2 text-sm text-slate-200 backdrop-blur">
               <Truck className="h-4 w-4 text-sky-300" />
-              Morocco's premier automotive marketplace
+              Premium service scheduling for Garajy customers
             </div>
-            <div className="max-w-2xl space-y-6">
-              <h1 className="text-5xl font-semibold tracking-tight text-white sm:text-6xl">
-                Find The Best Garage Near You
-              </h1>
-              <p className="max-w-xl text-lg text-slate-300 sm:text-xl">
-                Book repairs, compare garages, request roadside assistance, and manage your vehicle in one platform.
+            <div className="max-w-3xl space-y-6">
+              <div className="space-y-4">
+                <p className="text-sm uppercase tracking-[0.32em] text-sky-300">Appointment Booking</p>
+                <h1 className="text-5xl font-semibold tracking-tight text-white sm:text-6xl">
+                  Book your next service with the elegance of a luxury drive
+                </h1>
+              </div>
+              <p className="max-w-xl text-lg leading-8 text-slate-300 sm:text-xl">
+                Discover a refined vehicle care experience. Get instant slots, white-glove pickup, and premium garages all from one beautifully crafted booking flow.
+              </p>
+              <p className="text-sm text-slate-400">
+                Need help? Call our booking line at <a className="text-sky-300 transition hover:text-sky-200" href="tel:0777683347">0777683347</a> or <a className="text-sky-300 transition hover:text-sky-200" href="tel:0693575942">0693575942</a>.
               </p>
               <div className="flex flex-wrap gap-4">
-                <Button size="lg">Find Garage</Button>
-                <Button variant="secondary" size="lg">Emergency Assistance</Button>
-                <Button variant="ghost" size="lg">Register Garage</Button>
+                <Button asChild size="lg">
+                  <a href="#booking-form">Book Appointment</a>
+                </Button>
+                <Button variant="secondary" size="lg">
+                  View Premium Fleet
+                </Button>
               </div>
             </div>
-            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-              {statistics.map((stat) => (
-                <Card key={stat.label} className="border-white/10 p-5">
-                  <CardTitle className="text-2xl">{stat.value}</CardTitle>
-                  <CardDescription>{stat.label}</CardDescription>
-                </Card>
+            <div className="grid gap-4 sm:grid-cols-2">
+              {heroHighlights.map((item) => (
+                <div key={item} className="rounded-3xl border border-white/10 bg-slate-900/70 p-5 shadow-inner">
+                  <p className="text-sm text-slate-400">{item}</p>
+                </div>
               ))}
             </div>
-          </div>
-          <div className="relative flex h-[520px] items-end justify-center overflow-hidden rounded-[40px] border border-white/10 bg-slate-950/70 p-6 shadow-glass">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.18),_transparent_38%)]" />
-            <div className="relative w-full max-w-2xl">
-              <div className="flex flex-col gap-4 rounded-[32px] border border-white/10 bg-slate-900/80 p-6 shadow-inner">
-                <div className="flex flex-wrap items-center justify-between gap-4">
-                  <div>
-                    <p className="text-sm uppercase tracking-[0.24em] text-sky-300">Marketplace Search</p>
-                    <h2 className="mt-2 text-2xl font-semibold text-white">Search your city, service, and vehicle brand</h2>
-                  </div>
-                  <div className="rounded-full bg-slate-800 px-4 py-2 text-sm text-slate-300">Live</div>
+          </motion.div>
+
+          <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.9, delay: 0.1 }} className="relative overflow-hidden rounded-[36px] border border-white/10 bg-[#0a1325]/80 p-8 shadow-2xl shadow-slate-950/60 backdrop-blur-xl">
+            <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-sky-400 via-fuchsia-400 to-emerald-400 opacity-60" />
+            <div className="relative space-y-8">
+              <div className="space-y-3">
+                <p className="text-sm uppercase tracking-[0.28em] text-sky-300">Choose your appointment</p>
+                <h2 className="text-3xl font-semibold text-white">Reserve your service slot</h2>
+              </div>
+              <form id="booking-form" className="grid gap-4" onSubmit={handleSubmit}>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <label className="space-y-2 text-sm text-slate-300">
+                    Name
+                    <input
+                      name="name"
+                      value={form.name}
+                      onChange={handleChange}
+                      className="w-full rounded-3xl border border-white/10 bg-slate-950/80 px-4 py-4 text-white outline-none transition focus:border-sky-400/60"
+                      placeholder="Your full name"
+                    />
+                  </label>
+                  <label className="space-y-2 text-sm text-slate-300">
+                    Phone
+                    <input
+                      name="phone"
+                      value={form.phone}
+                      onChange={handleChange}
+                      className="w-full rounded-3xl border border-white/10 bg-slate-950/80 px-4 py-4 text-white outline-none transition focus:border-sky-400/60"
+                      placeholder="0777683347"
+                    />
+                  </label>
                 </div>
                 <div className="grid gap-4 sm:grid-cols-3">
-                  <input className="rounded-2xl border border-white/10 bg-slate-950/80 px-4 py-4 text-white placeholder:text-slate-400 focus:border-sky-400/60 focus:outline-none" placeholder="City" />
-                  <input className="rounded-2xl border border-white/10 bg-slate-950/80 px-4 py-4 text-white placeholder:text-slate-400 focus:border-sky-400/60 focus:outline-none" placeholder="Service" />
-                  <input className="rounded-2xl border border-white/10 bg-slate-950/80 px-4 py-4 text-white placeholder:text-slate-400 focus:border-sky-400/60 focus:outline-none" placeholder="Vehicle Brand" />
+                  <label className="space-y-2 text-sm text-slate-300">
+                    Car Brand
+                    <input
+                      name="brand"
+                      value={form.brand}
+                      onChange={handleChange}
+                      className="w-full rounded-3xl border border-white/10 bg-slate-950/80 px-4 py-4 text-white outline-none transition focus:border-sky-400/60"
+                      placeholder="Peugeot"
+                    />
+                  </label>
+                  <label className="space-y-2 text-sm text-slate-300">
+                    Car Model
+                    <input
+                      name="model"
+                      value={form.model}
+                      onChange={handleChange}
+                      className="w-full rounded-3xl border border-white/10 bg-slate-950/80 px-4 py-4 text-white outline-none transition focus:border-sky-400/60"
+                      placeholder="208 GT"
+                    />
+                  </label>
+                  <label className="space-y-2 text-sm text-slate-300">
+                    Year
+                    <select
+                      name="year"
+                      value={form.year}
+                      onChange={handleChange}
+                      className="w-full rounded-3xl border border-white/10 bg-slate-950/80 px-4 py-4 text-white outline-none transition focus:border-sky-400/60"
+                    >
+                      {yearOptions.map((year) => (
+                        <option key={year} value={year}>
+                          {year}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
                 </div>
-                <div className="rounded-3xl bg-slate-950/80 p-5 text-slate-300">
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <div className="flex items-center gap-2 text-sm uppercase text-slate-400">
-                      <MapPin className="h-4 w-4 text-sky-300" /> Nearby Garages
-                    </div>
-                    <span className="rounded-full bg-slate-800/80 px-3 py-1 text-xs uppercase tracking-[0.24em] text-slate-300">Best match</span>
-                  </div>
-                  <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                    <div className="rounded-3xl bg-slate-900/80 p-4">
-                      <p className="text-xs uppercase tracking-[0.24em] text-slate-400">Garage</p>
-                      <p className="mt-2 text-sm font-medium">Atlas Auto Center</p>
-                      <p className="mt-1 text-xs text-slate-500">Casablanca</p>
-                    </div>
-                    <div className="rounded-3xl bg-slate-900/80 p-4">
-                      <p className="text-xs uppercase tracking-[0.24em] text-slate-400">Service</p>
-                      <p className="mt-2 text-sm font-medium">Full Inspection</p>
-                      <p className="mt-1 text-xs text-slate-500">From 249 MAD</p>
-                    </div>
-                  </div>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <label className="space-y-2 text-sm text-slate-300">
+                    Service
+                    <select
+                      name="service"
+                      value={form.service}
+                      onChange={handleChange}
+                      className="w-full rounded-3xl border border-white/10 bg-slate-950/80 px-4 py-4 text-white outline-none transition focus:border-sky-400/60"
+                    >
+                      {serviceOptions.map((option) => (
+                        <option key={option} value={option}>
+                          {option}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="space-y-2 text-sm text-slate-300">
+                    Date
+                    <input
+                      name="date"
+                      type="date"
+                      value={form.date}
+                      onChange={handleChange}
+                      className="w-full rounded-3xl border border-white/10 bg-slate-950/80 px-4 py-4 text-white outline-none transition focus:border-sky-400/60"
+                    />
+                  </label>
                 </div>
-              </div>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <label className="space-y-2 text-sm text-slate-300">
+                    Time
+                    <input
+                      name="time"
+                      type="time"
+                      value={form.time}
+                      onChange={handleChange}
+                      className="w-full rounded-3xl border border-white/10 bg-slate-950/80 px-4 py-4 text-white outline-none transition focus:border-sky-400/60"
+                    />
+                  </label>
+                  <label className="space-y-2 text-sm text-slate-300">
+                    Problem Description
+                    <textarea
+                      name="description"
+                      rows={4}
+                      value={form.description}
+                      onChange={handleChange}
+                      className="w-full rounded-3xl border border-white/10 bg-slate-950/80 px-4 py-4 text-white outline-none transition focus:border-sky-400/60"
+                      placeholder="Describe the issue or service request"
+                    />
+                  </label>
+                </div>
+                {message ? (
+                  <div
+                    className={`rounded-3xl border p-4 text-sm ${
+                      status === "success"
+                        ? "border-emerald-400/20 bg-emerald-500/10 text-emerald-200"
+                        : "border-rose-400/20 bg-rose-500/10 text-rose-200"
+                    }`}
+                  >
+                    {message}
+                  </div>
+                ) : null}
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="rounded-3xl border border-slate-800/90 bg-slate-900/80 p-4 text-sm text-slate-300">
+                    <p className="font-semibold text-white">Next available:</p>
+                    <p className="mt-1">Tomorrow, 09:30 AM</p>
+                  </div>
+                  <Button type="submit" size="lg" className="w-full sm:w-auto" disabled={status === "submitting"}>
+                    {status === "submitting" ? "Sending..." : "Confirm appointment"}
+                  </Button>
+                </div>
+              </form>
             </div>
+          </motion.div>
+        </div>
+      </section>
+
+      <section className="mx-auto mt-16 max-w-7xl space-y-10">
+        <div className="grid gap-6 lg:grid-cols-3">
+          {premiumServices.map((service) => (
+            <PremiumCard key={service.title} {...service} />
+          ))}
+        </div>
+      </section>
+
+      <section className="mx-auto mt-16 max-w-6xl rounded-[40px] border border-white/10 bg-slate-950/70 p-10 shadow-glow">
+        <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
+          <div className="space-y-4">
+            <p className="text-sm uppercase tracking-[0.28em] text-sky-300">Service flow</p>
+            <h2 className="text-3xl font-semibold text-white">A refined booking experience in three steps</h2>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-3">
+            {processSteps.map((step) => (
+              <div key={step.label} className="rounded-3xl border border-white/10 bg-slate-900/80 p-6">
+                <p className="text-sm uppercase tracking-[0.24em] text-slate-400">{step.label}</p>
+                <p className="mt-3 text-sm leading-7 text-slate-300">{step.detail}</p>
+              </div>
+            ))}
           </div>
         </div>
+      </section>
 
-        <section className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
-          <Card className="rounded-[36px] border-white/10 p-8">
-            <CardHeader>
-              <div>
-                <p className="text-sm uppercase tracking-[0.24em] text-sky-300">Featured services</p>
-                <CardTitle>Explore the best in class auto care</CardTitle>
-              </div>
-            </CardHeader>
-            <div className="grid gap-4 sm:grid-cols-2">
-              {services.map((item) => (
-                <div key={item.title} className="rounded-3xl border border-white/10 bg-slate-950/70 p-6">
-                  <div className="text-2xl">{item.icon}</div>
-                  <h3 className="mt-4 text-lg font-semibold text-white">{item.title}</h3>
-                  <p className="mt-2 text-sm leading-6 text-slate-300">{item.description}</p>
-                </div>
-              ))}
-            </div>
-          </Card>
-          <Card className="rounded-[36px] border-white/10 p-8">
-            <CardHeader>
-              <div>
-                <p className="text-sm uppercase tracking-[0.24em] text-sky-300">Garage spotlight</p>
-                <CardTitle>Trusted by thousands of drivers across Morocco</CardTitle>
-              </div>
-            </CardHeader>
-            <div className="space-y-5">
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="rounded-3xl bg-slate-950/80 p-5">
-                  <p className="text-sm text-slate-400">Available mechanics</p>
-                  <p className="mt-3 text-3xl font-semibold text-white">+116</p>
-                </div>
-                <div className="rounded-3xl bg-slate-950/80 p-5">
-                  <p className="text-sm text-slate-400">Verified garages</p>
-                  <p className="mt-3 text-3xl font-semibold text-white">368</p>
-                </div>
-              </div>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="rounded-3xl bg-slate-950/80 p-5">
-                  <p className="text-sm text-slate-400">Response rate</p>
-                  <p className="mt-3 text-3xl font-semibold text-white">98%</p>
-                </div>
-                <div className="rounded-3xl bg-slate-950/80 p-5">
-                  <p className="text-sm text-slate-400">Average repair time</p>
-                  <p className="mt-3 text-3xl font-semibold text-white">1.2h</p>
-                </div>
-              </div>
-            </div>
-          </Card>
-        </section>
-
-        <section className="space-y-6">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <p className="text-sm uppercase tracking-[0.24em] text-sky-300">Marketplace</p>
-              <h2 className="text-3xl font-semibold text-white">Top garages near you</h2>
-            </div>
-            <Button variant="outline">View all garages</Button>
+      <section className="mx-auto mt-16 max-w-7xl space-y-8">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-sm uppercase tracking-[0.28em] text-sky-300">Why choose Garajy</p>
+            <h2 className="text-3xl font-semibold text-white">Premium appointments built for modern drivers</h2>
           </div>
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            <GarageCard />
-            <GarageCard />
-            <GarageCard />
-          </div>
-        </section>
+          <Button variant="outline">Explore all services</Button>
+        </div>
+        <div className="grid gap-6 lg:grid-cols-3">
+          <Card className="rounded-[32px] border-white/10 p-8">
+            <CardHeader>
+              <CardTitle>Elite partners</CardTitle>
+            </CardHeader>
+            <CardDescription>Only top-rated garages with a commitment to luxury service are featured in our network.</CardDescription>
+          </Card>
+          <Card className="rounded-[32px] border-white/10 p-8">
+            <CardHeader>
+              <CardTitle>Transparent pricing</CardTitle>
+            </CardHeader>
+            <CardDescription>Book with confidence thanks to clear cost estimates and appointment confirmations.</CardDescription>
+          </Card>
+          <Card className="rounded-[32px] border-white/10 p-8">
+            <CardHeader>
+              <CardTitle>Seamless follow-up</CardTitle>
+            </CardHeader>
+            <CardDescription>Receive service progress updates, inspection reports, and post-service care notes.</CardDescription>
+          </Card>
+        </div>
       </section>
     </main>
   );
