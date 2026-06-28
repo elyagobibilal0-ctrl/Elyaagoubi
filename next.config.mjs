@@ -13,13 +13,10 @@ const nextConfig = {
       {
         protocol: "https",
         hostname: "res.cloudinary.com"
-      }
-    ]
+      },
+    ],
   },
-  i18n: {
-    locales: ["en", "fr", "ar"],
-    defaultLocale: "en"
-  }
+  },
 };
 
 export default nextConfig;
